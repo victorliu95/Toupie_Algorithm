@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_5eb63356f04f450585a1ba7f49f33b76 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+            </style>
+        
+</head>
+<body>    
+    
+            <div class="folium-map" id="map_5eb63356f04f450585a1ba7f49f33b76" ></div>
+        
+</body>
+<script>    
+    
+            var map_5eb63356f04f450585a1ba7f49f33b76 = L.map(
+                "map_5eb63356f04f450585a1ba7f49f33b76",
+                {
+                    center: [46.2276, 2.2137],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 20,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_193511339eeb4be8ac09d97018ec8c2f = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_5eb63356f04f450585a1ba7f49f33b76);
+        
+    
+            var marker_ebf8cc29493345d2b91e9436ba4e065b = L.marker(
+                [48.839517, 2.2442056],
+                {}
+            ).addTo(map_5eb63356f04f450585a1ba7f49f33b76);
+        
+    
+            var icon_3194618688384f16a1af81f100da61d6 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_ebf8cc29493345d2b91e9436ba4e065b.setIcon(icon_3194618688384f16a1af81f100da61d6);
+        
+    
+        var popup_0384e1119bb8456d9ec1c6f3531fc19a = L.popup({"maxWidth": "100%"});
+
+        
+            var html_9e3af8f4932a4906a44d73af1a69758d = $(`<div id="html_9e3af8f4932a4906a44d73af1a69758d" style="width: 100.0%; height: 100.0%;">Priod - Boulogne - Ford has a demand of 1 cars</div>`)[0];
+            popup_0384e1119bb8456d9ec1c6f3531fc19a.setContent(html_9e3af8f4932a4906a44d73af1a69758d);
+        
+
+        marker_ebf8cc29493345d2b91e9436ba4e065b.bindPopup(popup_0384e1119bb8456d9ec1c6f3531fc19a)
+        ;
+
+        
+    
+    
+            var marker_8dece3b2258b4861882704fa0221176b = L.marker(
+                [48.9051544, 2.0463281],
+                {}
+            ).addTo(map_5eb63356f04f450585a1ba7f49f33b76);
+        
+    
+            var icon_5afd8c200a0f4f629143d5c7f89bbac3 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_8dece3b2258b4861882704fa0221176b.setIcon(icon_5afd8c200a0f4f629143d5c7f89bbac3);
+        
+    
+        var popup_72f11976e12f41eda15a91005dc36f7e = L.popup({"maxWidth": "100%"});
+
+        
+            var html_15e7173843e84c64a8c503897d6487cd = $(`<div id="html_15e7173843e84c64a8c503897d6487cd" style="width: 100.0%; height: 100.0%;">Priod - Chambourcy - Ford has a demand of 2 cars</div>`)[0];
+            popup_72f11976e12f41eda15a91005dc36f7e.setContent(html_15e7173843e84c64a8c503897d6487cd);
+        
+
+        marker_8dece3b2258b4861882704fa0221176b.bindPopup(popup_72f11976e12f41eda15a91005dc36f7e)
+        ;
+
+        
+    
+    
+            var marker_402f7d089ae9455db91c7c05565a60ab = L.marker(
+                [48.75691940000001, 1.9319236],
+                {}
+            ).addTo(map_5eb63356f04f450585a1ba7f49f33b76);
+        
+    
+            var icon_14167b7e77fd45f8b0d25703889f6a8d = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_402f7d089ae9455db91c7c05565a60ab.setIcon(icon_14167b7e77fd45f8b0d25703889f6a8d);
+        
+    
+        var popup_552f3ef43cdb4bc0885f6d930cf9d3e3 = L.popup({"maxWidth": "100%"});
+
+        
+            var html_7df438d8d6be418b935d34c077d1723d = $(`<div id="html_7df438d8d6be418b935d34c077d1723d" style="width: 100.0%; height: 100.0%;">Priod - Coignieres - Fiat has a demand of 3 cars</div>`)[0];
+            popup_552f3ef43cdb4bc0885f6d930cf9d3e3.setContent(html_7df438d8d6be418b935d34c077d1723d);
+        
+
+        marker_402f7d089ae9455db91c7c05565a60ab.bindPopup(popup_552f3ef43cdb4bc0885f6d930cf9d3e3)
+        ;
+
+        
+    
+    
+            var marker_286b79b1759f4683b5f9bf522a4692d1 = L.marker(
+                [48.96101, 2.4893065],
+                {}
+            ).addTo(map_5eb63356f04f450585a1ba7f49f33b76);
+        
+    
+            var icon_aef7c44f5c794380a9bc603bb537c8d7 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "red", "prefix": "glyphicon"}
+            );
+            marker_286b79b1759f4683b5f9bf522a4692d1.setIcon(icon_aef7c44f5c794380a9bc603bb537c8d7);
+        
+    
+        var popup_5e4cdf062b80430bb3229354bc87e51b = L.popup({"maxWidth": "100%"});
+
+        
+            var html_cd3489c37d534a89be922770873b76bc = $(`<div id="html_cd3489c37d534a89be922770873b76bc" style="width: 100.0%; height: 100.0%;">Logistikzentrum Aulnay</div>`)[0];
+            popup_5e4cdf062b80430bb3229354bc87e51b.setContent(html_cd3489c37d534a89be922770873b76bc);
+        
+
+        marker_286b79b1759f4683b5f9bf522a4692d1.bindPopup(popup_5e4cdf062b80430bb3229354bc87e51b)
+        ;
+
+        
+    
+</script>
