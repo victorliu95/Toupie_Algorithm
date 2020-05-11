@@ -41,57 +41,10 @@ Hypothesis :
 
 #geolocator = Nominatim(user_agent='locate',timeout=1000)
 def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
-    print("0")
-    #TruckSpeed={'LC17-Bourgogne-Franche-Comté':80,'LC17-Île-de-France':80,'Auvergne-Rhône-Alpes':60,'Bourgogne-Franche-Comté':60,'Brittany':60,'Centre-Val de Loire':60,'Grand Est':60,'Hauts-de-France':60,'Île-de-France':60,'Normandy':60,'Nouvelle-Aquitaine':60,'Occitanie':60,"Provence-Alpes-Côte d'Azur":60,"Seine-Saint-Denis 14":60,"Val-de-Marne":60}
-    SpeedCoef=0.95
-    TimeMatrixBr2Br = np.zeros((len(Zone.BranchesList),len(Zone.BranchesList)))
-    TimeMatrixLc2Br = np.zeros((len(Zone.LcList),len(Zone.BranchesList)))
     
-    for i in range(len(Zone.BranchesList)):
-        for j in range(len(Zone.BranchesList)):
-            if(j>=i):
-                if(i==j):
-                    TimeMatrixBr2Br[i,j]=0
-                else:
-                    LatLongTupleStart=convertToTuple(Zone.BranchesList[i].GetLatLong())
-                    Start=(LatLongTupleStart[1],LatLongTupleStart[0])
-                    
-                    LatLongTupleEnd=convertToTuple(Zone.BranchesList[j].GetLatLong())
-                    End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
-                    
-                    TimeMatrixBr2Br[i,j]=distance.distance(Start,End).km*(60/100*SpeedCoef)#TruckSpeed[str(Zone.GetName())]*SpeedCoef)
-                    TimeMatrixBr2Br[j,i]=TimeMatrixBr2Br[i,j]
-    
-    
-    
-                
-            
-                
-        for l in range(len(Zone.LcList)):
-            
-            LatLongTupleStart=convertToTuple(Zone.LcList[l].GetLatLong())
-            Start=(LatLongTupleStart[1],LatLongTupleStart[0])
-            
-            LatLongTupleEnd=convertToTuple(Zone.BranchesList[i].GetLatLong())
-            End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
-            
-            TimeMatrixLc2Br[l,i] = distance.distance(Start,End).km*(60/100*SpeedCoef)#TruckSpeed[str(Zone.GetName())]*SpeedCoef)
+    TimeMatrixBr2Br, TimeMatrixLc2Br = ComputeNodesDistances(Zone)
          
-    
-    MaxDist_Br_Br = 0 
-    for i in range(len(Zone.BranchesList)):
-        for j in range(len(Zone.BranchesList)):
-            if TimeMatrixBr2Br[i,j] >= MaxDist_Br_Br:
-                MaxDist_Br_Br = TimeMatrixBr2Br[i,j]
-    print("Max distance BR 2 BR :" + str(MaxDist_Br_Br))
-    
-    MaxDist_Br_LC = 0 
-    for l in range(len(Zone.LcList)):
-        for i in range(len(Zone.BranchesList)):
-            if TimeMatrixLc2Br[l,i]>= MaxDist_Br_Br:
-                MaxDist_Br_LC = TimeMatrixLc2Br[l,i]
-    print("Max Distance LC 2 BR : " + str(MaxDist_Br_LC))
-    
+
      
     ########################## Input Datas ##########################
     
@@ -105,9 +58,7 @@ def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
     Time_Period_In_Mins  ={'1 Period': np.array([600*Setting]),'2 Periods':np.array([300,300])}
     Time_Slots = {'1 Period' : range(1) , '2 Periods' : range(2)}
 
-    KPI1=0 # number of picked up cars
-    KPI2=0 # logistic cost per vehicle
-    Total_Truck_Cost=0 #Total truck cost 
+    
     Branches = range(len(Zone.BranchesList))
     LCs = range(len(Zone.LcList))
     Trucks = range(10)
@@ -138,7 +89,6 @@ def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
     
     Truck_Capacity = 8
     Fixed_Cost_Truck =  750
-    Truck_Speed = 5 #need to change it and to find a acceptable value
     
     ##########################
     

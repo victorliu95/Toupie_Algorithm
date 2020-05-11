@@ -7,7 +7,6 @@ Created on Fri Feb 14 11:38:29 2020
 
 import numpy as np;
 from DataExtraction import * 
-#from RandomDemandListCreation import * 
 from math import * 
 import math as m
 
