@@ -265,7 +265,7 @@ class Zone(object):
 class Problem(object):
     
     def InitPb(self):
-        self.Name="LogAlgoRema"
+        self.Name="Toupie_Remarketing_Algorithm"
         self.ZoneList=[]
         self.AllBranchesList=[]
         self.AllLcList=[]
@@ -309,16 +309,6 @@ class Problem(object):
             self.AllSupplierList.append(TruckSupplier)
     
     
-    
-
-##################### Examples & tests ##################### 
-"""
-TabTestBr=np.array([["A","13 rue Lebon", 1,1,1,"Nord",9],["B", "4 rue de Rivoli",1,1,1,"Nord",6],["C", "Gare Cardinet",1,1,1,"IDF EST",6]])
-
-TabTestLc=np.array([["LcA","13 FFFF", 1,1,1,"Nord"],["LcB","14CCCC",1,1,1,"Sud"]])
-
-TabTestListeZone = np.array(["Basse Normandie", "Grand Est", "Haute Normandie", "IDF EST", "IDF OUEST","IDF NORD", "Nord"])
-"""
 
 def CreatingProblemObject(ZoneNameList,TypeOfDataExtraction):
     
@@ -353,7 +343,6 @@ def CreatingProblemObject(ZoneNameList,TypeOfDataExtraction):
     
     return ProblemObject
     ### Inputs Lists building ###
-### 
     
 def CreatingTestProblemObject(ZoneName,TypeOfDataExtraction,TotalDemand,NbBranchesViewed):
     
@@ -389,7 +378,6 @@ def CreatingTestProblemObject(ZoneName,TypeOfDataExtraction,TotalDemand,NbBranch
     ########################################
     
     return ProblemObject
-    ### Inputs Lists building ###     
     
         
         

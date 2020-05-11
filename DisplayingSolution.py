@@ -189,7 +189,7 @@ def DisplaySolInConsole(PathTruckBr2BrList,PathTruckBr2LcList,PathTruckLc2BrList
 
 ### Function to display KPIs ###
 
-def DisplayKPIsInConsole(Truck,Branches,Trucks,LCs,Fixed_Cost_Truck,Time_Slots,Transported_Qty_Truck_Br2LC):
+def GetAndDisplayKPIsInConsole(Truck,Branches,Trucks,LCs,Fixed_Cost_Truck,Time_Slots,Transported_Qty_Truck_Br2LC):
     KPI1=0
     KPI2=0
     Total_Truck_Cost=0
@@ -205,6 +205,7 @@ def DisplayKPIsInConsole(Truck,Branches,Trucks,LCs,Fixed_Cost_Truck,Time_Slots,T
     print("- Nombre de voiture enelevé dans la journée : " + str(KPI1) + "\n")
     print("- Coût d'enlévement unitaire : " + '%g'%KPI2 + " euros")
             
+    return int(KPI2)
             
 ################################
 

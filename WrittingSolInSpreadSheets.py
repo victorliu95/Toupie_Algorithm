@@ -13,34 +13,27 @@ from RouteSplitter import *
 
 
 def WriteSolInSpreadSheet(Truck,NbTrucks,NbPeriods,ListOfTotalTrajectory,ListOfTimesTrajectory,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,Zone,Fixed_Cost_Truck,SpreadID,SheetID,NumberOfPeriod,SuspiciousLT):
-    """
-    sheet = main().spreadsheets()
-    
-    sheet.values().clear(spreadsheetId=SpreadID,range=SheetID+'A1:BZ100').execute()
-    """
+   
 ### Building lists that will provide informaton to the spreadsheet ###
-    #for t in range(NbPeriods) : 
     
-    InfoList=[]
-    Name=[str(Zone.GetName())]
-    TotalDemand=[str(Zone.GetTotalDemand())]
-    InfoList.append(Name)
-    InfoList.append(TotalDemand)
+    WrittenItineraries = []
     
-    WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', SheetID+'A1:A2', 'ROWS' , [['Zone'],['Zone Demand']])
-
-    WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', SheetID+'B1:B2', 'ROWS' , InfoList)
+    WriteSheetHeaders(Zone,SpreadID,SheetID)
     
     RoutesPerTruckList = []
     TruckKpis = []
 
     for c in range(NbTrucks) : 
+        
+        CurrentWrittenItinerary = []
+        
         ### Truck writting ###
         
         GoogleFormatTruckList=[]
         ValuesTruckList=[]
-        ValuesColumnNameList=[['Location'],['Qty to deposit'],['Loading Left'],['Arr Time'],['Dep Time'],['Address']]
-        PeriodsValuesList={'2 Periods': [[['Morning Routing 8h-13h']],[['Afternoon Routing 14h-18h']]], '1 Period':[[['Journey Routing']]]}
+        
+        ValuesColumnNameList=[['Truck ID'],['Location'],['Address'],['Arr Time'],['Dep Time'],['Current Loading'],['Qty to load']]
+        PeriodsValuesList={'2 Periods': [[['Morning Routing 8h-13h']],[['Afternoon Routing 13h-18h']]], '1 Period':[[['Journey Routing']]]}
         
         
         TruckRange = '{}{}{}:{}{}'.format(SheetID, StartColumn, GetRowToWriteIn(NumberOfPeriod, c, "headBegin"), EndColumn, GetRowToWriteIn(NumberOfPeriod, c, "headEnd"))
@@ -71,112 +64,154 @@ def WriteSolInSpreadSheet(Truck,NbTrucks,NbPeriods,ListOfTotalTrajectory,ListOfT
                 
                 WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', ColumnNameRangeList[t], 'COLUMNS' , ValuesColumnNameList)
 
-            ######################
-            
-            ### Routing Writting ###
-                GoogleFormatBranchList=[]
+                if len(ListOfTotalTrajectory[t][c])!=0 : 
+                    
+                    ### Routing Writting ###
+                    GoogleFormatBranchList=[]
                 
-                for i in range(len(ListOfTotalTrajectory[t][c])):
+                    for i in range(len(ListOfTotalTrajectory[t][c])):
                     
-                    RoutingInfoList=[]
-                    
-                    Index=ListOfTotalTrajectory[t][c][i]
-                    LastIndex=ListOfTotalTrajectory[t][c][len(ListOfTotalTrajectory[t][c])-1]
-                    if(i==0):
+                        RoutingInfoList=[]
+                        Itinerary = []
                         
-                        Name=Zone.LcList[Index[0]].GetName()
-                        PickingQty=0
-                        TransportedQty=TransportedQtyTruckBr2LcList[LastIndex[0]][LastIndex[1]][c][t]
-                        ArrivalTime="None"
-                        DepartureTime=int(ListOfTimesTrajectory[t][c][i][0])
+                        Index=ListOfTotalTrajectory[t][c][i]
+                        LastIndex=ListOfTotalTrajectory[t][c][len(ListOfTotalTrajectory[t][c])-1]
                         
-                        GoogleFormatBranchList.append(FillingList(RoutingInfoList,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime))
-                        
-                    elif(i==len(ListOfTotalTrajectory[t][c])-1):
-                        
-                        if(len(ListOfTotalTrajectory[t][c])>2):
+                        if(i==0):
                             
-                            # Last Branch #
-                            RetardedIndex=ListOfTotalTrajectory[t][c][i-1]
-                            CurrentIndex=ListOfTotalTrajectory[t][c][i]
-                            Name=Zone.BranchesList[Index[0]].GetName()
-                            Address = Zone.BranchesList[Index[0]].GetAddress()
-                            PickingQty=TransportedQtyTruckBr2LcList[Index[0]][Index[1]][c][t]-sum(TransportedQtyTruckBr2BrList[k][Index[0]][c][t] for k in range(Zone.GetNumberOfBranchesInZone()))
-                            TransportedQty=0
-                            ArrivalTime=int(ListOfTimesTrajectory[t][c][i-1][1])
+                            TruckID = c+1
+                            
+                            Name=Zone.LcList[Index[0]].GetName()
+                            
+                            ArrivalTime="None"
                             DepartureTime=int(ListOfTimesTrajectory[t][c][i][0])
                             
-                            GoogleFormatBranchList.append(FillingList(RoutingInfoList,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime, Address))
+                            PickingQty=0
+                            TransportedQty=0#TransportedQtyTruckBr2LcList[LastIndex[0]][LastIndex[1]][c][t]
                             
+                            GoogleFormatBranchList.append(FillingList(RoutingInfoList,TruckID,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime))
+                            
+                            CurrentWrittenItinerary.append(FillingItineraryList(Itinerary,TruckID,Name,PickingQty,ArrivalTime,DepartureTime))                        
+                        
+                        elif(i==len(ListOfTotalTrajectory[t][c])-1):
+                            
+                            if(len(ListOfTotalTrajectory[t][c])>2):
+                                
+                                # Last Branch #
+                                RetardedIndex=ListOfTotalTrajectory[t][c][i-1]
+                                CurrentIndex=ListOfTotalTrajectory[t][c][i]
+                                
+                                TruckID = c+1
+                                
+                                Name=Zone.BranchesList[Index[0]].GetName()
+                                Address = Zone.BranchesList[Index[0]].GetAddress()
+                                
+                                ArrivalTime=int(ListOfTimesTrajectory[t][c][i-1][1])
+                                DepartureTime=int(ListOfTimesTrajectory[t][c][i][0])
+                                
+                                PickingQty=TransportedQtyTruckBr2LcList[Index[0]][Index[1]][c][t]-sum(TransportedQtyTruckBr2BrList[k][Index[0]][c][t] for k in range(Zone.GetNumberOfBranchesInZone()))
+                                TransportedQty=TransportedQtyTruckBr2BrList[RetardedIndex[0]][RetardedIndex[1]][c][t]
+                                
+                                GoogleFormatBranchList.append(FillingList(RoutingInfoList,TruckID,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime, Address))
+                                
+                                CurrentWrittenItinerary.append(FillingItineraryList(Itinerary,TruckID,Name,PickingQty,ArrivalTime,DepartureTime))                                
+                            else:
+                                
+                                RetardedIndex=ListOfTotalTrajectory[t][c][i-1]
+                                
+                                TruckID = c+1
+                                
+                                Name=Zone.BranchesList[Index[0]].GetName()
+                                Address = Zone.BranchesList[Index[0]].GetAddress()
+                                
+                                ArrivalTime=int(ListOfTimesTrajectory[t][c][i-1][1])
+                                DepartureTime=int(ListOfTimesTrajectory[t][c][i][0])
+                                
+                                PickingQty=TransportedQtyTruckBr2LcList[Index[0]][Index[1]][c][t]-sum(TransportedQtyTruckBr2BrList[k][Index[0]][c][t] for k in range(Zone.GetNumberOfBranchesInZone()))
+                                TransportedQty=0
+                                
+                                
+                                GoogleFormatBranchList.append(FillingList(RoutingInfoList,TruckID,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime, Address))
+                                
+                                CurrentWrittenItinerary.append(FillingItineraryList(Itinerary,TruckID,Name,PickingQty,ArrivalTime,DepartureTime))
+                            # Lc #
+                                
+                            RoutingInfoList=[]
+                            
+                            Itinerary = []
+                            
+                            TruckID = c+1
+                            
+                            Name=Zone.LcList[Index[1]].GetName()
+                            
+                            ArrivalTime=int(ListOfTimesTrajectory[t][c][i][1])
+                            DepartureTime="None"
+                            
+                            TransportedQty=TransportedQtyTruckBr2LcList[LastIndex[0]][LastIndex[1]][c][t]
+                            PickingQty=0
+                           
+                            
+                            GoogleFormatBranchList.append(FillingList(RoutingInfoList,TruckID,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime))
+                            
+                            CurrentWrittenItinerary.append(FillingItineraryList(Itinerary,TruckID,Name,PickingQty,ArrivalTime,DepartureTime))
+                       
                         else:
                             
                             RetardedIndex=ListOfTotalTrajectory[t][c][i-1]
+                           
+                            TruckID = c+1
                             
                             Name=Zone.BranchesList[Index[0]].GetName()
                             Address = Zone.BranchesList[Index[0]].GetAddress()
-                            PickingQty=TransportedQtyTruckBr2LcList[Index[0]][Index[1]][c][t]-sum(TransportedQtyTruckBr2BrList[k][Index[0]][c][t] for k in range(Zone.GetNumberOfBranchesInZone()))
-                            TransportedQty=0
+                            
                             ArrivalTime=int(ListOfTimesTrajectory[t][c][i-1][1])
                             DepartureTime=int(ListOfTimesTrajectory[t][c][i][0])
                             
-                            GoogleFormatBranchList.append(FillingList(RoutingInfoList,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime, Address))
-                            
-                        # Lc #
-                            
-                        RoutingInfoList=[]
+                            PickingQty=TransportedQtyTruckBr2BrList[Index[0]][Index[1]][c][t]-sum(TransportedQtyTruckBr2BrList[k][Index[0]][c][t] for k in range(Zone.GetNumberOfBranchesInZone()))
+                            TransportedQty=TransportedQtyTruckBr2BrList[Index[0]][Index[1]][c][t]-PickingQty
+                          
+                            GoogleFormatBranchList.append(FillingList(RoutingInfoList,TruckID,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime, Address))
+
+                            CurrentWrittenItinerary.append(FillingItineraryList(Itinerary,TruckID,Name,PickingQty,ArrivalTime,DepartureTime))
+                    
+                    GoogleFormatBranchList = PrepareRouteForProcessing(GoogleFormatBranchList)
+    
+                    if NbPeriods == '1 Period' : 
                         
-                        Name=Zone.LcList[Index[1]].GetName()
-                        TransportedQty=0
-                        PickingQty=0
-                        ArrivalTime=int(ListOfTimesTrajectory[t][c][i][1])
-                        DepartureTime="None"
+                        GoogleFormatBranchList = InsertBreakRows(GoogleFormatBranchList)
+                        GoogleFormatBranchList = SplitRoute(GoogleFormatBranchList)
                         
-                        GoogleFormatBranchList.append(FillingList(RoutingInfoList,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime))
-                            
-                    else:
-                        
-                        RetardedIndex=ListOfTotalTrajectory[t][c][i-1]
-                       
-                        Name=Zone.BranchesList[Index[0]].GetName()
-                        Address = Zone.BranchesList[Index[0]].GetAddress()
-                        PickingQty=TransportedQtyTruckBr2BrList[Index[0]][Index[1]][c][t]-sum(TransportedQtyTruckBr2BrList[k][Index[0]][c][t] for k in range(Zone.GetNumberOfBranchesInZone()))
-                        TransportedQty=TransportedQtyTruckBr2LcList[LastIndex[0]][LastIndex[1]][c][t]-TransportedQtyTruckBr2BrList[Index[0]][Index[1]][c][t]
-                        ArrivalTime=int(ListOfTimesTrajectory[t][c][i-1][1])
-                        DepartureTime=int(ListOfTimesTrajectory[t][c][i][0])
-                        
-                        GoogleFormatBranchList.append(FillingList(RoutingInfoList,Name,PickingQty,TransportedQty,ArrivalTime,DepartureTime, Address))
-
-                GoogleFormatBranchList = PrepareRouteForProcessing(GoogleFormatBranchList)
-
-                GoogleFormatBranchList = SplitRoute(GoogleFormatBranchList)
-                GoogleFormatBranchList = InsertBreakRows(GoogleFormatBranchList)
-                GoogleFormatBranchList = FormatRouteTimesInHours(GoogleFormatBranchList)
-
-                GoogleFormatBranchList = ClearExtraRouteInfo(GoogleFormatBranchList)
-
-                # RoutesPerTruckList.append([c, t, GoogleFormatBranchList, GoogleFormatBranchList[0][2], len(ListOfTotalTrajectory[t][c])])
-                RoutesPerTruckList.append([c, t, GoogleFormatBranchList, GoogleFormatBranchList[0][2], len(GoogleFormatBranchList)])
-
+                    GoogleFormatBranchList = FormatRouteTimesInHours(GoogleFormatBranchList)
+                    GoogleFormatBranchList = ClearExtraRouteInfo(GoogleFormatBranchList)
+                    #RoutesPerTruckList.append([c, t, GoogleFormatBranchList, GoogleFormatBranchList[0][2], len(ListOfTotalTrajectory[t][c])])
+                    RoutesPerTruckList.append([c, t, GoogleFormatBranchList, GoogleFormatBranchList[0][2], len(GoogleFormatBranchList)])
+                
+                else : 
+                    
+                    RowToWrite = GetRowToWriteIn(NumberOfPeriod, c, "RoutingRangeStartIndex2Periods")
+                    UnusedTruckRange = SheetID+'B'+str(RowToWrite)+':C'+str(RowToWrite)
+                    WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', UnusedTruckRange, 'COLUMNS' , [['Truck'],['Unused']])
+   
             KPITruck = Fixed_Cost_Truck/sum(TransportedQtyTruckBr2LcList[i][l][c][t] for i in range(Zone.GetNumberOfBranchesInZone()) for l in range(Zone.GetNumberOfLcInZone()) for t in range(NbPeriods))
             TruckKpis.append([c, KPITruck])
-
+            
+            WriteSuspiciousLTInSheet(Zone,SpreadID, SheetID, main().spreadsheets(),'K')
+            
+            WrittenItineraries.append(CurrentWrittenItinerary)
+            
     if NumberOfPeriod == '1 Period':
+        
         RoutesPerTruckList, TruckKpis = SortRoutesAndKpis(RoutesPerTruckList, TruckKpis)
 
     WriteRoutesInSheet(SpreadID, SheetID, NumberOfPeriod, RoutesPerTruckList)
     
     ### Global KPIs Display ###  
-                
+          
     KPI1=sum(TransportedQtyTruckBr2LcList[i][l][c][t] for i in range(Zone.GetNumberOfBranchesInZone()) for l in range(Zone.GetNumberOfLcInZone()) for c in range(NbTrucks) for t in range(NbPeriods))
-    WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', SheetID+'C1:E1', 'COLUMNS' , [['KPI1'],['Number of cars to deliver'],[int(KPI1)]])
     
-    WrittingInSheet(SpreadID, main().spreadsheets(),'RAW',SheetID+'K10','COLUMNS',[[str(Zone.GetName())]])
+    WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', SheetID+'C1:E1', 'COLUMNS' , [['KPI1'],['Number of cars to pick up'],[int(KPI1)]])
     
-    WrittingInSheet(SpreadID, main().spreadsheets(),'RAW',SheetID+'K11','COLUMNS',[['Suspicious LT between merchants']])
-    
-    WrittingInSheet(SpreadID, main().spreadsheets(),'RAW',SheetID+'K12:O12','COLUMNS',[['Period'],['Truck'],['Merchant 1'],['Merchant 2'],['Travel Time (min)']])
-    
-    
+
     if len(SuspiciousLT) != 0 : 
         
         WrittingInSheet(SpreadID, main().spreadsheets(),'RAW',SheetID + 'K13:0'+str(13+len(SuspiciousLT)-1),'ROWS',SuspiciousLT)
@@ -184,6 +219,8 @@ def WriteSolInSpreadSheet(Truck,NbTrucks,NbPeriods,ListOfTotalTrajectory,ListOfT
     else : 
         
         WrittingInSheet(SpreadID, main().spreadsheets(),'RAW',SheetID + 'K13:M13','COLUMNS',[["Any Suspicious LeadTime"]])
+
+    return WrittenItineraries
 
 def SortRoutesAndKpis(routesPerTruckList, truckKpis):
 
@@ -261,6 +298,8 @@ def GetRowToWriteIn(totalNumberOfPeriods, truckNumber, section, currentPeriodNum
         return baseRow + 16
     elif section == "columnHeader2":
         return baseRow + 17
+    elif section == 'RoutingRangeStartIndex2Periods':
+        return baseRow + 18
     elif section == "routingRangeStartIndex":
         return 10 + (13*currentPeriodNumber) + (truckNumber)*truckSectionSizeInRows
     elif section == "routingRangeEndIndex":
@@ -275,12 +314,104 @@ def GetRowToWriteIn(totalNumberOfPeriods, truckNumber, section, currentPeriodNum
 def GetColumnOffset(columnLetter, offset):
     return chr(ord(columnLetter) + offset)                     
 
+def WriteSuspiciousLTInSheet(Zone,SpreadID, SheetID, Sheet,StartColumn):
+    
+    StartColumn = StartColumn
+    IndexEndColumn = ConvertIndexIntoA1Notation(StartColumn) + 5
+    EndColumn = ConvertA1Notation(IndexEndColumn)
+    
+    WrittingInSheet(SpreadID,Sheet ,'RAW',SheetID+StartColumn+'10','COLUMNS',[[str(Zone.GetName())]])
+    
+    WrittingInSheet(SpreadID, Sheet,'RAW',SheetID+StartColumn+'11','COLUMNS',[['Suspicious LT between merchants']])
+    
+    WrittingInSheet(SpreadID, Sheet,'RAW',SheetID+StartColumn+'12:'+EndColumn+'12','COLUMNS',[['Period'],['Truck'],['Merchant 1'],['Merchant 2'],['Travel Time (min)']])
 
+def WriteSheetHeaders(Zone,SpreadID,SheetID):
+    
+    InfoList=[]
+    
+    Name=str(Zone.GetName())
+    TotalDemand=str(Zone.GetTotalDemand())
+    
+    InfoList.append([['Zone'],[Name]])
+    InfoList.append([['Zone Demand'],[TotalDemand]])
+    
+    WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', SheetID+'A1:B1', 'COLUMNS' , InfoList[0])
+    WrittingInSheet(SpreadID, main().spreadsheets(), 'RAW', SheetID+'A2:B2', 'COLUMNS' , InfoList[1])
+
+def WriteSuspiciousLTIntoReport(SolSpreadSheetId,Sheet,SuspiciousLtList):
+
+    Sheet.values().clear(spreadsheetId=SolSpreadSheetId,range='FlagLT!A1:F150').execute()
+       
+    Index = 0
+    
+    WrittingInSheet(SolSpreadSheetId, Sheet,'RAW','FlagLT!A'+str(Index+1)+':F'+str(Index+1),'COLUMNS',[['Label'],['Period'],['Truck'],['Merchant 1'],['Merchant 2'],['Travel Time (min)']])
+    
+    if len(SuspiciousLtList) != 0:
+        
+        for i in range(len(SuspiciousLtList)) : 
+            
+            WrittingInSheet(SolSpreadSheetId, Sheet,'RAW','FlagLT!A'+str(Index+2)+':F'+str(Index+2+len(SuspiciousLtList[i][1])),'ROWS',SuspiciousLtList[i][1])
+        
+            Index = Index + len(SuspiciousLtList[i][1])
+            
+    else: 
+        
+        WrittingInSheet(SolSpreadSheetId, Sheet,'RAW','FlagLT!A'+str(Index+2)+':C'+str(Index+2),'COLUMNS',[['Any'],['Suspicious'],['LT']])
+            
+  
+
+
+def WriteItinerariesListInSheet(WrittenItineraries,ItinerariesRange,ZoneNameList,SpreadSheetId,KpiList):
+    
+    Sheet = main().spreadsheets()
+    
+    for i in range(len(ZoneNameList)):
+        
+        Range = ItinerariesRange[ZoneNameList[i][0]]
+        
+        Sheet.values().clear(spreadsheetId=SpreadSheetId,range=Range+'A1:BZ3').execute()
+        Sheet.values().clear(spreadsheetId=SpreadSheetId,range=Range+'A20:BZ100').execute()
+
+        SheetHeaders = [['Zone'],['#Truck']]
+        WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'A1:A2', 'ROWS' , SheetHeaders)
+
+        SheetHeaders = [[ZoneNameList[i][0]],[str(len(WrittenItineraries))]]
+        WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'B1:B2', 'ROWS' , SheetHeaders)
+        
+        Kpi = [['Cost €/PU'],[KpiList[i]]]
+        WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'C1:D1', 'COLUMNS' , Kpi)
+
+        StartRowIndex = 20
+        
+        for j in range(len(WrittenItineraries)): 
+            
+            ItinerariesHeaders = [['Truck ID'],['Dealer Name'],['Arrival Time'],['Departure Time'],['PU/DO']]
+            WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'A'+str(StartRowIndex)+':E'+str(StartRowIndex), 'COLUMNS' , ItinerariesHeaders)
+            
+            ItinerariesStartIndex = StartRowIndex + 1 
+            ItinerariesEndIndex = ItinerariesStartIndex + len(WrittenItineraries[j])
+            
+            NextItinerariesIndex = ItinerariesStartIndex + 12
+            
+            WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'A'+str(ItinerariesStartIndex)+':E'+str(ItinerariesEndIndex), 'ROWS' , WrittenItineraries[j])
+            
+            StartRowIndex = NextItinerariesIndex + 4
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
 # global variables
 
 PeriodsValuesList={'1 Period' : [[['Morning Routing 8h-13h']],[['Afternoon Routing 14h-18h']]], '2 Periods':[['Journey Routing 9h-17h30']]}
 StartColumn = "B"
-EndColumn = "G"
+EndColumn = "H"
 
 
 
