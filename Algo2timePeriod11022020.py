@@ -19,6 +19,7 @@ from geopy.distance import geodesic
 from RouteOrganizer import *
 from WrittingSolInSpreadSheets import * 
 from Utils import *
+
 ############# First simplified model of remarketing logistic optimization (vehicle routing problem) ###################
 
 
@@ -40,57 +41,10 @@ Hypothesis :
 
 #geolocator = Nominatim(user_agent='locate',timeout=1000)
 def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
-    print("0")
-    #TruckSpeed={'LC17-Bourgogne-Franche-Comté':80,'LC17-Île-de-France':80,'Auvergne-Rhône-Alpes':60,'Bourgogne-Franche-Comté':60,'Brittany':60,'Centre-Val de Loire':60,'Grand Est':60,'Hauts-de-France':60,'Île-de-France':60,'Normandy':60,'Nouvelle-Aquitaine':60,'Occitanie':60,"Provence-Alpes-Côte d'Azur":60,"Seine-Saint-Denis 14":60,"Val-de-Marne":60}
-    SpeedCoef=0.95
-    TimeMatrixBr2Br = np.zeros((len(Zone.BranchesList),len(Zone.BranchesList)))
-    TimeMatrixLc2Br = np.zeros((len(Zone.LcList),len(Zone.BranchesList)))
     
-    for i in range(len(Zone.BranchesList)):
-        for j in range(len(Zone.BranchesList)):
-            if(j>=i):
-                if(i==j):
-                    TimeMatrixBr2Br[i,j]=0
-                else:
-                    LatLongTupleStart=convertToTuple(Zone.BranchesList[i].GetLatLong())
-                    Start=(LatLongTupleStart[1],LatLongTupleStart[0])
-                    
-                    LatLongTupleEnd=convertToTuple(Zone.BranchesList[j].GetLatLong())
-                    End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
-                    
-                    TimeMatrixBr2Br[i,j]=distance.distance(Start,End).km*(60/100*SpeedCoef)#TruckSpeed[str(Zone.GetName())]*SpeedCoef)
-                    TimeMatrixBr2Br[j,i]=TimeMatrixBr2Br[i,j]
-    
-    
-    
-                
-            
-                
-        for l in range(len(Zone.LcList)):
-            
-            LatLongTupleStart=convertToTuple(Zone.LcList[l].GetLatLong())
-            Start=(LatLongTupleStart[1],LatLongTupleStart[0])
-            
-            LatLongTupleEnd=convertToTuple(Zone.BranchesList[i].GetLatLong())
-            End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
-            
-            TimeMatrixLc2Br[l,i] = distance.distance(Start,End).km*(60/100*SpeedCoef)#TruckSpeed[str(Zone.GetName())]*SpeedCoef)
+    TimeMatrixBr2Br, TimeMatrixLc2Br = ComputeNodesDistances(Zone)
          
-    
-    MaxDist_Br_Br = 0 
-    for i in range(len(Zone.BranchesList)):
-        for j in range(len(Zone.BranchesList)):
-            if TimeMatrixBr2Br[i,j] >= MaxDist_Br_Br:
-                MaxDist_Br_Br = TimeMatrixBr2Br[i,j]
-    print("Max distance BR 2 BR :" + str(MaxDist_Br_Br))
-    
-    MaxDist_Br_LC = 0 
-    for l in range(len(Zone.LcList)):
-        for i in range(len(Zone.BranchesList)):
-            if TimeMatrixLc2Br[l,i]>= MaxDist_Br_Br:
-                MaxDist_Br_LC = TimeMatrixLc2Br[l,i]
-    print("Max Distance LC 2 BR : " + str(MaxDist_Br_LC))
-    
+
      
     ########################## Input Datas ##########################
     
@@ -104,9 +58,7 @@ def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
     Time_Period_In_Mins  ={'1 Period': np.array([600*Setting]),'2 Periods':np.array([300,300])}
     Time_Slots = {'1 Period' : range(1) , '2 Periods' : range(2)}
 
-    KPI1=0 # number of picked up cars
-    KPI2=0 # logistic cost per vehicle
-    Total_Truck_Cost=0 #Total truck cost 
+    
     Branches = range(len(Zone.BranchesList))
     LCs = range(len(Zone.LcList))
     Trucks = range(10)
@@ -137,7 +89,6 @@ def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
     
     Truck_Capacity = 8
     Fixed_Cost_Truck =  750
-    Truck_Speed = 5 #need to change it and to find a acceptable value
     
     ##########################
     
@@ -218,22 +169,27 @@ def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
     
     ### Edge boolean variables updates according to Transported_Qty_Truck variables ###
     # If a quantity is transported between two nodes of the graph, this way we used the path between these two points and the boolean variable that representes the path using will be equal to 1
+    
     for t in Time_Slots[NumberOfPeriod] :    
         for c in Trucks : 
             for i in Branches :
                 for j in Branches :
+                    
                     model.addConstr(Transported_Qty_Truck_Br2Br[i,j,c,t]<=Truck_Capacity*Path_Truck_Br2Br[i,j,c,t])
                     model.addConstr(Transported_Qty_Truck_Br2Br[i,j,c,t]>=0)
                     
                 for l in LCs :
+                    
                     model.addConstr(Transported_Qty_Truck_Br2LC[i,l,c,t]<=Truck_Capacity*Path_Truck_Br2LC[i,l,c,t])
     
     #################################################################################    
     
     ### Truck routing continuity constraints ###
+    
     for t in Time_Slots[NumberOfPeriod] :             
         for c in Trucks : 
             for j in Branches : 
+                
                 model.addConstr(sum(Path_Truck_Br2Br[i,j,c,t] for i in Branches) + sum(Path_Truck_LC2Br[l,j,c,t] for l in LCs)==sum(Path_Truck_Br2Br[j,k,c,t] for k in Branches)+ sum(Path_Truck_Br2LC[j,l,c,t] for l in LCs)) #If a truck is going to the node j coming from another node or from the logistic center, he must leave to another node (branch) or to the logistic center
     
     ############################################
@@ -301,72 +257,44 @@ def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
     ###############
     
     ####################################            
-            
+          
+    ### Convert Gurobi Variables into into a list containing only variables values ###
                 
-            
-            
+
+    GurobiVarDict = GurobiVarToValueList(Branches,LCs,Trucks,Time_Slots[NumberOfPeriod],TruckUsedPerPeriod,Transported_Qty_Truck_Br2Br,Path_Truck_LC2Br,Path_Truck_Br2Br,Path_Truck_Br2LC,Transported_Qty_Truck_Br2LC)                              
+    
+    PathTruckBr2BrList= GurobiVarDict['Br to Br Path']
+    PathTruckBr2LcList= GurobiVarDict['Br to Lc Path']
+    PathTruckLc2BrList= GurobiVarDict['Lc to Br Path']
+    
+    TransportedQtyTruckBr2BrList= GurobiVarDict['Br to Br Qty']
+    TransportedQtyTruckBr2LcList= GurobiVarDict['Br to Lc Qty']
+    
+    TruckPeriodUsingArray= GurobiVarDict['Truck per Period']
     
     
+    ### Creating Indexex trajectory list & times trajectory list ###
     
-    ### Creating morning & afternoon flows mapping ###  
-    
-    ### As said in the Displayingsolution file, we will build  both lists : BranchesList, LcList waiting for the automatization 
-    
-    
-    PathTruckBr2BrList=np.full((len(Branches),len(Branches),len(Trucks),len(Time_Slots[NumberOfPeriod])), 0)
-    PathTruckBr2LcList=np.full((len(Branches),len(LCs),len(Trucks),len(Time_Slots[NumberOfPeriod])), 0)
-    PathTruckLc2BrList=np.full((len(LCs),len(Branches),len(Trucks),len(Time_Slots[NumberOfPeriod])), 0)
-    TransportedQtyTruckBr2BrList=np.full((len(Branches),len(Branches),len(Trucks),len(Time_Slots[NumberOfPeriod])), 0)
-    TransportedQtyTruckBr2LcList=np.full((len(Branches),len(LCs),len(Trucks),len(Time_Slots[NumberOfPeriod])), 0)
-    TruckPeriodUsingArray=np.full((len(Trucks),len(Time_Slots[NumberOfPeriod])),0)
-    
-    
-    for t in Time_Slots[NumberOfPeriod] : 
-        for c in Trucks:
-            if(TruckUsedPerPeriod[c,t].x==1):
-                TruckPeriodUsingArray[c][t]=1
-            for i in Branches : 
-                for j in Branches : 
-                    if(Transported_Qty_Truck_Br2Br[i,j,c,t].x>0):
-                        TransportedQtyTruckBr2BrList[i][j][c][t]=Transported_Qty_Truck_Br2Br[i,j,c,t].x
-                        PathTruckBr2BrList[i][j][c][t]=Path_Truck_Br2Br[i,j,c,t].x
-                    else : 
-                        TransportedQtyTruckBr2BrList[i][j][c][t]=0
-                        PathTruckBr2BrList[i][j][c][t]=Path_Truck_Br2Br[i,j,c,t].x
-                for l in LCs : 
-                    if(Transported_Qty_Truck_Br2LC[i,l,c,t].x>0):
-                        
-                        TransportedQtyTruckBr2LcList[i][l][c][t]=Transported_Qty_Truck_Br2LC[i,l,c,t].x
-                        PathTruckBr2LcList[i][l][c][t]=Path_Truck_Br2LC[i,l,c,t].x
-                    else: 
-                        TransportedQtyTruckBr2LcList[i][l][c][t]=0
-                        PathTruckBr2LcList[i][l][c][t]=0
-                for l in LCs : 
-                    if(Path_Truck_LC2Br[l,i,c,t].x>0):
-                        PathTruckLc2BrList[l][i][c][t]=Path_Truck_LC2Br[l,i,c,t].x
-                    else:
-                        PathTruckLc2BrList[l][i][c][t]=Path_Truck_LC2Br[l,i,c,t].x
-                        
-                        
     ListOfTotalTrajectory=BuildIndexTrajectory(Time_Slots[NumberOfPeriod],Trucks,Branches,LCs,Truck,Path_Truck_LC2Br,Path_Truck_Br2Br,Path_Truck_Br2LC)
     ListOfTimesTrajectory=BuildTimesTrajectory(ListOfTotalTrajectory,Zone,len(Branches),StartingTimes[NumberOfPeriod],Time_LC2Br,Time_Br2Br,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList)
     
                  
     ### Printing solution & KPIs ###
+    
     DisplaySolInConsole(PathTruckBr2BrList,PathTruckBr2LcList,PathTruckLc2BrList,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,len(Trucks),len(Time_Slots[NumberOfPeriod]),len(Branches),Zone,StartingTimes[NumberOfPeriod],ListOfTotalTrajectory,TimeMatrixBr2Br,TimeMatrixLc2Br,TimeSlotNames[NumberOfPeriod],model.objVal,Fixed_Cost_Truck,TruckPeriodUsingArray,ListOfTimesTrajectory)              
-    DisplayingSolOnMap(Zone.BranchesList,Zone.LcList,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,PathTruckBr2BrList,PathTruckBr2LcList,PathTruckLc2BrList,[46.2276,2.2137],len(Trucks),len(Time_Slots[NumberOfPeriod]),ListOfTotalTrajectory,ListOfTimesTrajectory)
-    DisplayKPIsInConsole(Truck,Branches,Trucks,LCs,Fixed_Cost_Truck,Time_Slots[NumberOfPeriod],Transported_Qty_Truck_Br2LC)
+    KPI = GetAndDisplayKPIsInConsole(Truck,Branches,Trucks,LCs,Fixed_Cost_Truck,Time_Slots[NumberOfPeriod],Transported_Qty_Truck_Br2LC)
+    #DisplayingSolOnMap(Zone.BranchesList,Zone.LcList,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,PathTruckBr2BrList,PathTruckBr2LcList,PathTruckLc2BrList,[46.2276,2.2137],len(Trucks),len(Time_Slots[NumberOfPeriod]),ListOfTotalTrajectory,ListOfTimesTrajectory)
+
 
     SuspiciousLT = SuspiciousLT=ReportSuspiciousLTIndexes(Zone,TimeMatrixBr2Br,30,ListOfTotalTrajectory)
 
-    
-    WriteSolInSpreadSheet(Truck,len(Trucks),len(Time_Slots[NumberOfPeriod]),ListOfTotalTrajectory,ListOfTimesTrajectory,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,Zone,Fixed_Cost_Truck,OutPutSpreadsheet,SheetID,NumberOfPeriod,SuspiciousLT)
+    WrittenItineraries = WriteSolInSpreadSheet(Truck,len(Trucks),len(Time_Slots[NumberOfPeriod]),ListOfTotalTrajectory,ListOfTimesTrajectory,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,Zone,Fixed_Cost_Truck,OutPutSpreadsheet,SheetID,NumberOfPeriod,SuspiciousLT)
     
     
     if len(SuspiciousLT)==0 : 
         
-        return model.getVars(), None
+        return model.getVars(), None, WrittenItineraries,KPI
 
     else :
-        return model.getVars(),SuspiciousLT
+        return model.getVars(),SuspiciousLT, WrittenItineraries, KPI
     

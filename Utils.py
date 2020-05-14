@@ -11,6 +11,10 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread_formatting import *
 from DataExtraction import *
+from geopy import distance
+from geopy import geocoders
+from geopy.geocoders import Nominatim
+from geopy.distance import geodesic
  
 
 
@@ -25,6 +29,13 @@ def ConvertA1Notation(Index):
         A1Notation=str(Alphabet[(Index//26)-1]+Alphabet[Index%26])
     return A1Notation
 
+def ConvertIndexIntoA1Notation(A1Notation):
+    Alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+    Index = 0
+    for Letter in A1Notation : 
+        Index += Alphabet.index(Letter) +1
+    return Index
+
 def ConvertSecToHoursMin(TimeValue):
     
     if(TimeValue>=1440):
@@ -36,15 +47,42 @@ def ConvertSecToHoursMin(TimeValue):
     else :
         return str('%g'%(TimeValue//60)+' H '+'%g'%(m.ceil(TimeValue%60))+' min')
 
-def FillingList(List,Name,Qty,TransportedQty,ArrivalTime,DepartureTime, Address = ""):
+def FillingList(List,TruckID,Name,Qty,TransportedQty,ArrivalTime,DepartureTime, Address = ""):
+    
+    List.append(int(TruckID))
     
     List.append(str(Name))
-    List.append(int(Qty))
-    List.append(int(TransportedQty))
+    List.append(str(Address))
+
     List.append(ArrivalTime)
     List.append(DepartureTime)
-    List.append(str(Address))
+
+    List.append(int(TransportedQty))
+    List.append(int(Qty))
+    
     return List
+
+def FillingItineraryList(List, TruckID,Name,Qty,ArrivalTime,DepartureTime):
+
+    List.append(int(TruckID))
+    
+    List.append(str(Name))
+
+    if ArrivalTime == 'None' : 
+        List.append(ArrivalTime)
+
+    else :     
+        List.append(ConvertSecToHoursMin(ArrivalTime))
+        
+    if DepartureTime == 'None' : 
+            List.append(DepartureTime)  
+    else : 
+        List.append(ConvertSecToHoursMin(DepartureTime))
+
+    List.append(int(Qty))
+    
+    return List
+
 
 def WrittingInSheet(SpreadSheetID,sheet, ValueInputOption, Range, MajorDimensions,Values):
     
@@ -64,7 +102,7 @@ def ReportSuspiciousLTIndexes(Zone,TimeBr2Br,TravelTimeBound,ListOfTotalTrajecto
                 TupleItem=ListOfTotalTrajectory[t][c][i+1]
                 if (TimeBr2Br[TupleItem[0],TupleItem[1]]>=TravelTimeBound):
                     LtItem=None
-                    LtItem = [str(t+1), str(c+1), Zone.GetBranchesList()[TupleItem[0]].GetName(),Zone.GetBranchesList()[TupleItem[1]].GetName(),int(TimeBr2Br[TupleItem[0],TupleItem[1]])]
+                    LtItem = [Zone.GetName(),str(t+1), str(c+1), Zone.GetBranchesList()[TupleItem[0]].GetName(),Zone.GetBranchesList()[TupleItem[1]].GetName(),int(TimeBr2Br[TupleItem[0],TupleItem[1]])]
                     SuspiciousLTTuples.append(LtItem)
                     
     return SuspiciousLTTuples
@@ -108,11 +146,85 @@ def GetSheetID(Com_API, SpreadID ,SheetID_Name):
 
         if(Title==SheetID_Name):
             SheetID_Int = Sheets[i].get("properties", {}).get("sheetId",0)
-    
-    print(SheetID_Int)
-    
+        
     return SheetID_Int
  
+def GurobiVarToValueList(Branches,LCs,Trucks,Time_Slots_Period,TruckUsedPerPeriod,Transported_Qty_Truck_Br2Br,Path_Truck_LC2Br,Path_Truck_Br2Br,Path_Truck_Br2LC,Transported_Qty_Truck_Br2LC):
+
+    PathTruckBr2BrList=np.full((len(Branches),len(Branches),len(Trucks),len(Time_Slots_Period)), 0)
+    PathTruckBr2LcList=np.full((len(Branches),len(LCs),len(Trucks),len(Time_Slots_Period)), 0)
+    PathTruckLc2BrList=np.full((len(LCs),len(Branches),len(Trucks),len(Time_Slots_Period)), 0)
+    TransportedQtyTruckBr2BrList=np.full((len(Branches),len(Branches),len(Trucks),len(Time_Slots_Period)), 0)
+    TransportedQtyTruckBr2LcList=np.full((len(Branches),len(LCs),len(Trucks),len(Time_Slots_Period)), 0)
+    TruckPeriodUsingArray=np.full((len(Trucks),len(Time_Slots_Period)),0)
+    
+    for t in Time_Slots_Period : 
+        for c in Trucks:
+            if(TruckUsedPerPeriod[c,t].x==1):
+                TruckPeriodUsingArray[c][t]=1
+            for i in Branches : 
+                for j in Branches : 
+                    if(Transported_Qty_Truck_Br2Br[i,j,c,t].x>0):
+                        TransportedQtyTruckBr2BrList[i][j][c][t]=Transported_Qty_Truck_Br2Br[i,j,c,t].x
+                        PathTruckBr2BrList[i][j][c][t]=Path_Truck_Br2Br[i,j,c,t].x
+                    else : 
+                        TransportedQtyTruckBr2BrList[i][j][c][t]=0
+                        PathTruckBr2BrList[i][j][c][t]=Path_Truck_Br2Br[i,j,c,t].x
+                for l in LCs : 
+                    if(Transported_Qty_Truck_Br2LC[i,l,c,t].x>0):
+                        
+                        TransportedQtyTruckBr2LcList[i][l][c][t]=Transported_Qty_Truck_Br2LC[i,l,c,t].x
+                        PathTruckBr2LcList[i][l][c][t]=Path_Truck_Br2LC[i,l,c,t].x
+                    else: 
+                        TransportedQtyTruckBr2LcList[i][l][c][t]=0
+                        PathTruckBr2LcList[i][l][c][t]=0
+                for l in LCs : 
+                    if(Path_Truck_LC2Br[l,i,c,t].x>0):
+                        PathTruckLc2BrList[l][i][c][t]=Path_Truck_LC2Br[l,i,c,t].x
+                    else:
+                        PathTruckLc2BrList[l][i][c][t]=Path_Truck_LC2Br[l,i,c,t].x
+    
+    FinalDict = {'Br to Br Path':PathTruckBr2BrList, 'Br to Lc Path':PathTruckBr2LcList,'Lc to Br Path' :PathTruckLc2BrList, 'Br to Br Qty':TransportedQtyTruckBr2BrList, 'Br to Lc Qty':TransportedQtyTruckBr2LcList, 'Truck per Period':TruckPeriodUsingArray}
+    
+    return FinalDict
+
+def ComputeNodesDistances(Zone):
+    
+    SpeedCoef=0.95
+    TimeMatrixBr2Br = np.zeros((len(Zone.BranchesList),len(Zone.BranchesList)))
+    TimeMatrixLc2Br = np.zeros((len(Zone.LcList),len(Zone.BranchesList)))
+    
+    for i in range(len(Zone.BranchesList)):
+        for j in range(len(Zone.BranchesList)):
+            if(j>=i):
+                if(i==j):
+                    
+                    TimeMatrixBr2Br[i,j]=0
+               
+                else:
+                    LatLongTupleStart=convertToTuple(Zone.BranchesList[i].GetLatLong())
+                    Start=(LatLongTupleStart[1],LatLongTupleStart[0])
+                    
+                    LatLongTupleEnd=convertToTuple(Zone.BranchesList[j].GetLatLong())
+                    End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
+                    
+                    TimeMatrixBr2Br[i,j]=distance.distance(Start,End).km*(60/100*SpeedCoef)
+                    TimeMatrixBr2Br[j,i]=TimeMatrixBr2Br[i,j]
+    
+    
+        for l in range(len(Zone.LcList)):
+            
+            LatLongTupleStart=convertToTuple(Zone.LcList[l].GetLatLong())
+            Start=(LatLongTupleStart[1],LatLongTupleStart[0])
+            
+            LatLongTupleEnd=convertToTuple(Zone.BranchesList[i].GetLatLong())
+            End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
+            
+            TimeMatrixLc2Br[l,i] = distance.distance(Start,End).km*(60/100*SpeedCoef)
+            
+    return TimeMatrixBr2Br, TimeMatrixLc2Br
 
 
-#print(CleanString('HEllo LOL'))
+
+
+
