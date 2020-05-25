@@ -20,32 +20,15 @@ from RouteOrganizer import *
 from WrittingSolInSpreadSheets import * 
 from Utils import *
 
-############# First simplified model of remarketing logistic optimization (vehicle routing problem) ###################
 
 
-""" 
-Hypothesis : 
-#we consider the following facts to establish the first model : 
-    - 1 logistic center per cluster
-    - Starting and ending point for truck : Logistic center
-    - Static time to travel between 2 branches and between 1 branch and the logistic center
-    - Static time to load from the branches and offload cars into the logistic center
-    - Static time to enter and exit branches, logistic center
-    - Unlimited capacity for the logistic center
-    - 1 period considered like morning period or afternoon period 
-    - Same speed for every truck
-    - Same time to enter or exit from the branches/LC for trucks
-""" 
-
-### Time Matrix Calculation ###
-
-#geolocator = Nominatim(user_agent='locate',timeout=1000)
 def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
+    
+    ### Time Matrix Calculation ###
+
     
     TimeMatrixBr2Br, TimeMatrixLc2Br = ComputeNodesDistances(Zone)
          
-
-     
     ########################## Input Datas ##########################
     
     Branch_Name=Zone.BuildingBrNamesList()
@@ -283,7 +266,7 @@ def ProblemSolving(Zone,SheetID,NumberOfPeriod,Setting,OutPutSpreadsheet):
     
     DisplaySolInConsole(PathTruckBr2BrList,PathTruckBr2LcList,PathTruckLc2BrList,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,len(Trucks),len(Time_Slots[NumberOfPeriod]),len(Branches),Zone,StartingTimes[NumberOfPeriod],ListOfTotalTrajectory,TimeMatrixBr2Br,TimeMatrixLc2Br,TimeSlotNames[NumberOfPeriod],model.objVal,Fixed_Cost_Truck,TruckPeriodUsingArray,ListOfTimesTrajectory)              
     KPI = GetAndDisplayKPIsInConsole(Truck,Branches,Trucks,LCs,Fixed_Cost_Truck,Time_Slots[NumberOfPeriod],Transported_Qty_Truck_Br2LC)
-    #DisplayingSolOnMap(Zone.BranchesList,Zone.LcList,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,PathTruckBr2BrList,PathTruckBr2LcList,PathTruckLc2BrList,[46.2276,2.2137],len(Trucks),len(Time_Slots[NumberOfPeriod]),ListOfTotalTrajectory,ListOfTimesTrajectory)
+    DisplayingSolOnMap(Zone.BranchesList,Zone.LcList,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,PathTruckBr2BrList,PathTruckBr2LcList,PathTruckLc2BrList,[46.2276,2.2137],len(Trucks),len(Time_Slots[NumberOfPeriod]),ListOfTotalTrajectory,ListOfTimesTrajectory)
 
 
     SuspiciousLT = SuspiciousLT=ReportSuspiciousLTIndexes(Zone,TimeMatrixBr2Br,30,ListOfTotalTrajectory)
