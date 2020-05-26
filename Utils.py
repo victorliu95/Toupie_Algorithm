@@ -11,10 +11,6 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread_formatting import *
 from DataExtraction import *
-from geopy import distance
-from geopy import geocoders
-from geopy.geocoders import Nominatim
-from geopy.distance import geodesic
  
 
 
@@ -79,7 +75,14 @@ def FillingItineraryList(List, TruckID,Name,Qty,ArrivalTime,DepartureTime):
     else : 
         List.append(ConvertSecToHoursMin(DepartureTime))
 
+    if(Qty>0):
+        List.append("Pick up")
+    else : 
+        List.append("Drop Off")
+
     List.append(int(Qty))
+    
+    
     
     return List
 
@@ -187,44 +190,4 @@ def GurobiVarToValueList(Branches,LCs,Trucks,Time_Slots_Period,TruckUsedPerPerio
     FinalDict = {'Br to Br Path':PathTruckBr2BrList, 'Br to Lc Path':PathTruckBr2LcList,'Lc to Br Path' :PathTruckLc2BrList, 'Br to Br Qty':TransportedQtyTruckBr2BrList, 'Br to Lc Qty':TransportedQtyTruckBr2LcList, 'Truck per Period':TruckPeriodUsingArray}
     
     return FinalDict
-
-def ComputeNodesDistances(Zone):
-    
-    SpeedCoef=0.95
-    TimeMatrixBr2Br = np.zeros((len(Zone.BranchesList),len(Zone.BranchesList)))
-    TimeMatrixLc2Br = np.zeros((len(Zone.LcList),len(Zone.BranchesList)))
-    
-    for i in range(len(Zone.BranchesList)):
-        for j in range(len(Zone.BranchesList)):
-            if(j>=i):
-                if(i==j):
-                    
-                    TimeMatrixBr2Br[i,j]=0
-               
-                else:
-                    LatLongTupleStart=convertToTuple(Zone.BranchesList[i].GetLatLong())
-                    Start=(LatLongTupleStart[1],LatLongTupleStart[0])
-                    
-                    LatLongTupleEnd=convertToTuple(Zone.BranchesList[j].GetLatLong())
-                    End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
-                    
-                    TimeMatrixBr2Br[i,j]=distance.distance(Start,End).km*(60/100*SpeedCoef)
-                    TimeMatrixBr2Br[j,i]=TimeMatrixBr2Br[i,j]
-    
-    
-        for l in range(len(Zone.LcList)):
-            
-            LatLongTupleStart=convertToTuple(Zone.LcList[l].GetLatLong())
-            Start=(LatLongTupleStart[1],LatLongTupleStart[0])
-            
-            LatLongTupleEnd=convertToTuple(Zone.BranchesList[i].GetLatLong())
-            End=(LatLongTupleEnd[1],LatLongTupleEnd[0])
-            
-            TimeMatrixLc2Br[l,i] = distance.distance(Start,End).km*(60/100*SpeedCoef)
-            
-    return TimeMatrixBr2Br, TimeMatrixLc2Br
-
-
-
-
 
