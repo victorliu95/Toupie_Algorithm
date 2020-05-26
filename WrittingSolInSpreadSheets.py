@@ -384,17 +384,17 @@ def WriteItinerariesListInSheet(WrittenItineraries,ItinerariesRange,ZoneNameList
 
         StartRowIndex = 20
         
-        for j in range(len(WrittenItineraries[i])): 
+        for j in range(len(WrittenItineraries)): 
             
             ItinerariesHeaders = [['Truck ID'],['Dealer Name'],['Arrival Time'],['Departure Time'],['Status'],['QTY']]
             WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'A'+str(StartRowIndex)+':F'+str(StartRowIndex), 'COLUMNS' , ItinerariesHeaders)
             
             ItinerariesStartIndex = StartRowIndex + 1 
-            ItinerariesEndIndex = ItinerariesStartIndex + len(WrittenItineraries[i][j])
+            ItinerariesEndIndex = ItinerariesStartIndex + len(WrittenItineraries[j])
             
             NextItinerariesIndex = ItinerariesStartIndex + 12
             
-            WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'A'+str(ItinerariesStartIndex)+':F'+str(ItinerariesEndIndex), 'ROWS' , WrittenItineraries[i][j])
+            WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'A'+str(ItinerariesStartIndex)+':F'+str(ItinerariesEndIndex), 'ROWS' , WrittenItineraries[j])
             
             StartRowIndex = NextItinerariesIndex + 4
 
