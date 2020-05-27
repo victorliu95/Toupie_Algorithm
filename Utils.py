@@ -9,7 +9,7 @@ import math as m
 import numpy as np
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from gspread_formatting import *
+#from gspread_formatting import *
 from DataExtraction import *
 from geopy import distance
 from geopy import geocoders

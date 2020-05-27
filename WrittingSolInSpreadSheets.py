@@ -370,8 +370,8 @@ def WriteItinerariesListInSheet(WrittenItineraries,ItinerariesRange,ZoneNameList
         
         Range = ItinerariesRange[ZoneNameList[i][0]]
         
-        Sheet.values().clear(spreadsheetId=SpreadSheetId,range=Range+'A1:BZ3').execute()
-        Sheet.values().clear(spreadsheetId=SpreadSheetId,range=Range+'A20:BZ100').execute()
+        Sheet.values().clear(spreadsheetId=SpreadSheetId,range=Range+'A1:O3').execute()
+        Sheet.values().clear(spreadsheetId=SpreadSheetId,range=Range+'A20:O100').execute()
 
         SheetHeaders = [['Zone'],['#Truck']]
         WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'A1:A2', 'ROWS' , SheetHeaders)
