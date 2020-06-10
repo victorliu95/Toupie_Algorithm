@@ -10,6 +10,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 from DataExtraction import * 
 from Utils import *
 from RouteSplitter import *
+from datetime import date
+
 
 
 def WriteSolInSpreadSheet(Truck,NbTrucks,NbPeriods,ListOfTotalTrajectory,ListOfTimesTrajectory,TransportedQtyTruckBr2BrList,TransportedQtyTruckBr2LcList,Zone,Fixed_Cost_Truck,SpreadID,SheetID,NumberOfPeriod,SuspiciousLT):
@@ -381,6 +383,9 @@ def WriteItinerariesListInSheet(WrittenItineraries,ItinerariesRange,ZoneNameList
         
         Kpi = [['Cost €/PU'],[KpiList[i]]]
         WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'C1:D1', 'COLUMNS' , Kpi)
+        
+        ExecutionDate = [['Date of Execution'],[date.today().strftime("%Y-%m-%d")]]
+        WrittingInSheet(SpreadSheetId, Sheet, 'RAW', Range+'C2:D2', 'COLUMNS' , ExecutionDate)
 
         StartRowIndex = 20
         

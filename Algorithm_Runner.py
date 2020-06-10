@@ -29,7 +29,7 @@ def RunAlgorithm(ZoneNameList,SolOutputRange,SolSpreadSheetId,ItinerariesRange,I
         
         try :
             
-            sheet.values().clear(spreadsheetId=SolSpreadSheetId,range=SolOutputRange[SheetName]+"A1:BZ100").execute()
+            sheet.values().clear(spreadsheetId=SolSpreadSheetId,range=SolOutputRange[SheetName]+"A1:P100").execute()
             
             Variables, SuspiciousLT, WrittenItineraries, KpiItem = ProblemSolving(Routing.ZoneList[j],SolOutputRange[SheetName],'2 Periods',ZoneNameList[j][1],SolSpreadSheetId)
             
