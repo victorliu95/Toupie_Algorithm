@@ -14,8 +14,16 @@ ItinerariesRange = {'IDF OUEST':'Zone 5 - Capacity & Route planning (J+1)!','IDF
 ItinerariesSpreadSheetId = '1oVH1jGJibGiLIwbFcP1APdfy64j5DbgxkFJh2FidKOc'
 
 #ZoneNameList=[["Nord",2]]#,["IDF OUEST",2],["IDF EST",2],["Nord",2],["Haute Normandie",2],["Basse Normandie",2],["Grand Est",2],["Oise",2],["Rhône-Alpes",2]]
-ZoneNameList=[["Basse Normandie",2]]
 
+#ZoneNameList=[["Nord",2]]
+#ZoneNameList=[["Basse Normandie",2]]
+#ZoneNameList=[["Haute Normandie",2]]
+#ZoneNameList=[["IDF EST",2]]
+#ZoneNameList=[["IDF OUEST",2]]
+#ZoneNameList=[["IDF SUD",2]]
+#ZoneNameList=[["Oise",2]]
+#ZoneNameList=[["Grand Est",2]]
+ZoneNameList=[["Rhône-Alpes",2]]
 
 RunAlgorithm(ZoneNameList,SolOutputRange,SolSpreadSheetId,ItinerariesRange,ItinerariesSpreadSheetId)
     
