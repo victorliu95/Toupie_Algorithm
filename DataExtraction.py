@@ -50,7 +50,7 @@ def ExtractData(PbNameList):
     ### SpreadSheets API ###
     
     SpreadSheetsID='1GmJ1m7jhGMeNs8naSTcAoRC7RYtC1U53tnYk8E8203c'
-    Demand_SpreadSheets_ID= '12rD6jvhqIh7haa9-WEVORHfuT2JNbKRlIDQvq5hZrms'
+    Demand_SpreadSheets_ID= '1oVH1jGJibGiLIwbFcP1APdfy64j5DbgxkFJh2FidKOc'
     
     # Call the Sheets API
     
@@ -174,11 +174,11 @@ def ExtractData(PbNameList):
     BranchesDemandsValues=[]
     
         
-    NumberOfBranchesWithPositiveDemandProcessing = sheet.values().get(spreadsheetId=Demand_SpreadSheets_ID, range='Toupie_Branch_Demand!E3').execute()
+    NumberOfBranchesWithPositiveDemandProcessing = sheet.values().get(spreadsheetId=Demand_SpreadSheets_ID, range='Toupie_Demand_Algo!E3').execute()
     NumberOfBranchesWithPositiveDemand = NumberOfBranchesWithPositiveDemandProcessing.get('values',[])
-    LastRow = 3 + int(NumberOfBranchesWithPositiveDemand[0][0])-1
-    rangeDemandNames = 'Toupie_Branch_Demand!A3:A'+str(LastRow)
-    rangeDemandValues =  'Toupie_Branch_Demand!B3:B'+str(LastRow)
+    LastRow = 2 + int(NumberOfBranchesWithPositiveDemand[0][0])-1
+    rangeDemandNames = 'Toupie_Demand_Algo!A2:A'+str(LastRow)
+    rangeDemandValues =  'Toupie_Demand_Algo!B2:B'+str(LastRow)
     
     BranchesDemandsValuesProcessing = sheet.values().get(spreadsheetId=Demand_SpreadSheets_ID, range=rangeDemandValues).execute()
     
